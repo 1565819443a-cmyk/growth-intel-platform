@@ -39,7 +39,9 @@ def main():
             ("SELECT count(*) FROM dws_channel_daily", "dws_channel_daily"),
             ("SELECT count(*) FROM ads_kpi_daily", "ads_kpi_daily"),
             ("SELECT count(*) FROM ads_growth_funnel", "ads_growth_funnel"),
-            ("SELECT round(sum(gmv),1), round(sum(total_spend),1), round(sum(gmv)/nullif(sum(total_spend),0),2) "
+            # round(x*10)/10.0 写法兼容 SQLite 与 Postgres（后者无 round(x, n) 双参形式）
+            ("SELECT round(sum(gmv)*10)/10.0, round(sum(total_spend)*10)/10.0, "
+             "round(sum(gmv)/nullif(sum(total_spend),0)*100)/100.0 "
              "FROM ads_kpi_daily", "ads_kpi_daily (GMV, spend, ROAS)"),
             ("SELECT rfm_class, count(*) FROM ads_user_seg GROUP BY rfm_class ORDER BY 2 DESC", "RFM 分层"),
         ]:
@@ -47,6 +49,7 @@ def main():
                 rows = conn.execute(text(q)).fetchall()
             except Exception as e:  # noqa: BLE001
                 print(f"  [{label}] 查询失败: {e}")
+                conn.rollback()  # 单条失败不影响后续抽查
                 continue
             print(f"  [{label}]", rows[:6])
 
