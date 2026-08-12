@@ -1,0 +1,39 @@
+# ============================================================
+# Growth Intelligence Platform — 部署配置
+# ============================================================
+# 后端：Render 免费层 Web Service（Blueprint 声明式配置）
+# 前端：Vercel（见 vercel.json，在 frontend/ 目录部署）
+# 数据库：Neon Postgres 免费层
+#
+# 使用方式：
+#  1. 在 Neon 创建数据库，复制 DATABASE_URL（postgresql://...）
+#  2. 推送代码到 GitHub
+#  3. 在 Render 面板 New → Blueprint，选择本仓库与 backend/ 目录，
+#     填写 secret 环境变量（DATABASE_URL / DEEPSEEK_API_KEY / FRONTEND_ORIGIN）
+#  4. 在 Vercel 导入同一仓库（Root Directory 设为 frontend），
+#     配置 VITE_API_BASE 指向 Render 服务地址
+# ------------------------------------------------------------
+services:
+  - type: web
+    name: growth-intel-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # 在 Render 面板手动填入 Neon 连接串（secret）
+      - key: DEEPSEEK_API_KEY
+        sync: false          # 在 Render 面板手动填入 DeepSeek key（secret）
+      - key: DEEPSEEK_BASE_URL
+        value: https://api.deepseek.com
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: FRONTEND_ORIGIN
+        sync: false          # 填入 Vercel 前端域名，如 https://growth-intel.vercel.app
+      - key: SEED_START_DATE
+        value: "2026-02-01"
+      - key: SEED_END_DATE
+        value: "2026-07-31"
