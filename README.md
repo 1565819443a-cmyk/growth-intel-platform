@@ -6,6 +6,22 @@
 
 **在线演示：** 前端 https://growth-intel-platform.vercel.app · 后端 API https://growth-intel-api.onrender.com
 
+## 产品截图
+
+> 点击图片可查看大图。线上地址访问可能受网络影响，以下为本地直跑（同一套代码与数据）的实际界面，可直接预览产品形态。
+
+| 总览 · KPI 与核心趋势 | 用户分层 · RFM / LTV / 流失预警 |
+| --- | --- |
+| ![总览页](docs/screenshots/01-overview.png) | ![用户分层](docs/screenshots/02-users.png) |
+
+| MMM · 渠道贡献与预算重分配 | 裂变增长 · K 因子 / 阶梯 ROI / 漏斗 |
+| --- | --- |
+| ![MMM 营销组合模型](docs/screenshots/03-mmm.png) | ![裂变增长归因](docs/screenshots/04-growth.png) |
+
+| AI 策略报告 · 生成页 | AI 策略报告 · DeepSeek 流式生成结果 |
+| --- | --- |
+| ![AI 报告生成页](docs/screenshots/05-report.png) | ![AI 策略报告结果](docs/screenshots/06-report-generated.png) |
+
 ---
 
 ## 技术栈
@@ -131,5 +147,3 @@ growth-intel-platform/
 ## 简历一句话
 
 > 全栈构建跨境电商「增长智能分析平台」：自研模拟数仓（ODS→DWD→DWS→ADS，15k 用户 / 107 万事件，固定种子全可复现），实现 RFM 分层、BG-NBD 生命周期预测、GBM 流失预警（AUC 0.82）、adstock+Hill 饱和 MMM 预算分配、邀请裂变 K 因子归因，并接入 DeepSeek 流式生成经营策略报告；后端 FastAPI + 前端 React + LLM，Neon/Render/Vercel 全线上部署。
-
-完整简历条目（中英双版，含量化结果与项目链接）：[docs/resume-project-entry.md](docs/resume-project-entry.md)
