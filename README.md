@@ -4,7 +4,7 @@
 
 数据工程师视角的全栈实现 —— 从埋点原始日志（ODS）到数仓分层（DWD/DWS/ADS），到 RFM 分层、BG-NBD 生命周期预测、流失预警模型、营销组合模型（MMM）与裂变增长归因，最后接入 DeepSeek 流式生成可执行策略报告。
 
-**在线演示：** 前端 `https://xxx.vercel.app` · 后端 API `https://xxx.onrender.com`（部署后填入）
+**在线演示：** 前端 https://growth-intel-platform.vercel.app · 后端 API https://growth-intel-api.onrender.com
 
 ---
 
@@ -131,3 +131,5 @@ growth-intel-platform/
 ## 简历一句话
 
 > 全栈构建跨境电商「增长智能分析平台」：自研模拟数仓（ODS→DWD→DWS→ADS，15k 用户 / 107 万事件，固定种子全可复现），实现 RFM 分层、BG-NBD 生命周期预测、GBM 流失预警（AUC 0.82）、adstock+Hill 饱和 MMM 预算分配、邀请裂变 K 因子归因，并接入 DeepSeek 流式生成经营策略报告；后端 FastAPI + 前端 React + LLM，Neon/Render/Vercel 全线上部署。
+
+完整简历条目（中英双版，含量化结果与项目链接）：[docs/resume-project-entry.md](docs/resume-project-entry.md)
