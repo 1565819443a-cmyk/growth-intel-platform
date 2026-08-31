@@ -1,0 +1,6 @@
+application_id,institution_id,activity_year,action_taken,action_label,is_approved,is_originated,is_denied,product_type,loan_type,loan_purpose,loan_amount,income_thousands,debt_to_income_ratio,applicant_age,derived_race,derived_ethnicity,derived_sex,county_code
+1,LEI1,2025,1,发放,true,true,false,Conventional,1,1,200000,80,30%-<36%,35-44,Asian,Not Hispanic or Latino,Female,001
+2,LEI1,2025,2,批准未接受,true,false,false,Conventional,1,1,250000,90,36%-<43%,35-44,White,Not Hispanic or Latino,Male,001
+3,LEI2,2025,3,拒绝,false,false,true,FHA,2,1,180000,60,43%-<50%,45-54,Black or African American,Not Hispanic or Latino,Female,003
+4,LEI2,2025,4,申请人撤回,false,false,false,FHA,2,2,150000,70,30%-<36%,25-34,White,Hispanic or Latino,Male,003
+

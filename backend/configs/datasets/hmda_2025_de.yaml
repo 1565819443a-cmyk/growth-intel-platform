@@ -1,0 +1,30 @@
+id: hmda_2025_de
+name: HMDA 2025 Delaware
+description: CFPB/FFIEC 2025 Snapshot 真实住房信贷申请
+version: 1.0.0
+status: active
+source:
+  type: parquet
+  path: data/imports/hmda_applications.parquet
+mappings:
+  application_id: application_id
+  institution_id: institution_id
+  time: activity_year
+  amount: loan_amount
+  region: county_code
+  status: action_label
+  category: product_type
+dimensions: [institution_id, county_code, product_type, loan_purpose, loan_type, derived_race, derived_sex, derived_ethnicity, action_label]
+metrics:
+  applications: {name: 申请量, aggregation: count, owner: 信贷经营分析, version: 1.0.0}
+  approvals: {name: 批准量, aggregation: count, filter: "action_taken in (1,2)", owner: 信贷经营分析, version: 1.0.0}
+  originations: {name: 发放量, aggregation: count, filter: "action_taken = 1", owner: 信贷经营分析, version: 1.0.0}
+  denial_rate: {name: 拒绝率, aggregation: ratio, numerator: "count(*) filter (where action_taken=3)", denominator: "count(*) filter (where action_taken in (1,2,3))", unit: percent, owner: 合规分析, version: 1.0.0}
+  originated_amount: {name: 发放金额, aggregation: sum, field: loan_amount, filter: "action_taken = 1", owner: 信贷经营分析, version: 1.0.0}
+quality_rules:
+  - {id: institution_not_null, type: non_null, field: institution_id, severity: error}
+  - {id: amount_positive, type: range, field: loan_amount, min: 1, severity: error}
+  - {id: action_domain, type: accepted_values, field: action_taken, values: [1, 2, 3, 4, 5, 6, 7, 8], severity: error}
+lineage:
+  nodes: [ffiec.snapshot, ods.hmda_lar, dwd.loan_application, dws.institution_summary, ads.portfolio_kpi]
+  edges: [[ffiec.snapshot, ods.hmda_lar], [ods.hmda_lar, dwd.loan_application], [dwd.loan_application, dws.institution_summary], [dws.institution_summary, ads.portfolio_kpi]]

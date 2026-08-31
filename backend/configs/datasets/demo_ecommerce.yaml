@@ -1,0 +1,37 @@
+id: demo_ecommerce
+name: 模拟电商事件
+description: 固定小数据用于独立演示；不作为真实业务结论
+version: 1.0.0
+status: active
+data_freshness: "2026-07-09"
+source:
+  type: csv
+  path: data/demo/events.csv
+mappings:
+  user_id: user_id
+  event_id: [event_timestamp, event_name, user_id]
+  order_id: order_id
+  time: event_timestamp
+  amount: amount
+  channel: channel
+  region: region
+  campaign: campaign
+  event_type: event_name
+  category: category
+dimensions: [channel, region, category, campaign, event_name]
+metrics:
+  users: {name: 用户数, aggregation: distinct_count, field: user_id, owner: 经营分析, version: 1.0.0}
+  events: {name: 事件数, aggregation: count, owner: 数据产品, version: 1.0.0}
+  orders: {name: 订单数, aggregation: distinct_count, field: order_id, filter: "event_name = 'purchase'", owner: 经营分析, version: 1.0.0}
+  gmv: {name: GMV, aggregation: sum, field: amount, filter: "event_name = 'purchase'", owner: 经营分析, version: 1.0.0}
+  avg_order_amount: {name: 平均订单金额, aggregation: average, field: amount, filter: "event_name = 'purchase'", owner: 经营分析, version: 1.0.0}
+  aov_derived: {name: 客单价（派生）, aggregation: derived, expression: "sum(amount) filter (where event_name='purchase') / nullif(count(distinct order_id) filter (where event_name='purchase'),0)", owner: 指标治理, version: 1.0.0}
+  conversion_rate: {name: 购买转化率, aggregation: ratio, numerator: "count(distinct user_id) filter (where event_name='purchase')", denominator: "count(distinct user_id)", unit: percent, owner: 增长分析, version: 1.0.0}
+quality_rules:
+  - {id: user_not_null, type: non_null, field: user_id, severity: error}
+  - {id: amount_non_negative, type: range, field: amount, min: 0, severity: error}
+  - {id: event_domain, type: accepted_values, field: event_name, values: [page_view, view_item, add_to_cart, begin_checkout, purchase], severity: error}
+lineage:
+  nodes: [ods.events, dwd.events, dws.user_daily, ads.business_kpi]
+  edges: [[ods.events, dwd.events], [dwd.events, dws.user_daily], [dws.user_daily, ads.business_kpi]]
+funnel_steps: [page_view, view_item, add_to_cart, begin_checkout, purchase]

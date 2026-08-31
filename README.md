@@ -1,149 +1,116 @@
-# Growth Intelligence Platform · 增长智能分析平台
+# 多数据源经营分析与指标治理平台
 
-跨境电商增长数据产品：一套模拟数据底座 + 三个增长分析模块 + LLM 生成经营策略报告。
+> Universal Business Analytics & Metric Governance Platform — 多数据源接入、字段语义映射、统一指标中心、安全动态查询、数据质量、血缘与经营看板。
 
-数据工程师视角的全栈实现 —— 从埋点原始日志（ODS）到数仓分层（DWD/DWS/ADS），到 RFM 分层、BG-NBD 生命周期预测、流失预警模型、营销组合模型（MMM）与裂变增长归因，最后接入 DeepSeek 流式生成可执行策略报告。
+![平台经营总览](docs/screenshots/platform-overview.png)
 
-**在线演示：** 前端 https://growth-intel-platform.vercel.app · 后端 API https://growth-intel-api.onrender.com
-
-## 产品截图
-
-> 点击图片可查看大图。线上地址访问可能受网络影响，以下为本地直跑（同一套代码与数据）的实际界面，可直接预览产品形态。
-
-| 总览 · KPI 与核心趋势 | 用户分层 · RFM / LTV / 流失预警 |
-| --- | --- |
-| ![总览页](docs/screenshots/01-overview.png) | ![用户分层](docs/screenshots/02-users.png) |
-
-| MMM · 渠道贡献与预算重分配 | 裂变增长 · K 因子 / 阶梯 ROI / 漏斗 |
-| --- | --- |
-| ![MMM 营销组合模型](docs/screenshots/03-mmm.png) | ![裂变增长归因](docs/screenshots/04-growth.png) |
-
-| AI 策略报告 · 生成页 | AI 策略报告 · DeepSeek 流式生成结果 |
-| --- | --- |
-| ![AI 报告生成页](docs/screenshots/05-report.png) | ![AI 策略报告结果](docs/screenshots/06-report-generated.png) |
-
----
-
-## 技术栈
-
-| 层 | 技术 |
+| HMDA 真实指标工作区 | 缺少事件序列时自动停用漏斗 |
 |---|---|
-| 后端 | FastAPI · SQLAlchemy · pandas / numpy / scipy / scikit-learn / lifetimes |
-| 数据 | 模拟数仓：ODS → DWD → DWS → ADS 四层，SQLite（本地）/ PostgreSQL · Neon（生产） |
-| 建模 | RFM 分层 · BG-NBD + Gamma-Gamma LTV · GBM 流失预警 · adstock+Hill 饱和 MMM · K 因子归因 |
-| LLM | DeepSeek Chat（OpenAI 兼容），SSE 流式生成策略报告 |
-| 前端 | React 19 · Vite · TypeScript · ECharts · Tailwind |
-| 部署 | Render（后端）· Vercel（前端）· Neon（Postgres） |
+| ![HMDA workspace](docs/screenshots/hmda-workspace.png) | ![Capability guard](docs/screenshots/hmda-capability-guard.png) |
 
----
+## 业务问题
 
-## 三个分析模块
+分析团队经常为每个数据源重新写连接、字段解释、指标 SQL 和看板，造成同名指标口径不一致、一次性分析难以复用、缺字段时页面报错。平台把流程沉淀为：注册数据源 → 读取 Schema → 映射业务角色 → 配置指标/维度/质量规则 → 后端安全生成查询 → 前端按能力动态展示。
 
-**1. 用户分层与生命周期**（`/users`）
-- RFM 分层：高价值 / 高潜力 / 流失预警 / 沉睡 / 新客，分群规模 + 人均 GMV
-- 队列 LTV：按注册周观察累计收入曲线，BG-NBD + Gamma-Gamma 预测未来 90 天 LTV
-- 流失预警：梯度提升分类器，输出 Top 高风险名单 + 特征重要性（AUC 0.82）
+## 数据来源与通用性验证
 
-**2. 营销组合模型 MMM**（`/mmm`）
-- 几何 adstock（滞后衰减）+ Hill 饱和函数，scipy 最小二乘拟合渠道贡献
-- 各渠道贡献占比、ROAS、边际 ROAS；预算重分配建议（拉平边际回报，GMV 提升 %）
+本地实际注册三套结构不同的数据：
 
-**3. 裂变增长归因**（`/growth`）
-- 邀请关系 → 每月 K 因子趋势（0.9 → 1.4，增长故事）
-- 激励阶梯 ROI（3/5/10 人档奖励成本 vs 带来注册/首单/GMV）
-- 裂变漏斗：浏览邀请页 → 分享 → 邀请注册 → 首单
+1. 模拟电商事件：仓库内 20 行确定性演示数据，可独立运行。
+2. GA4 契约：来自 `ga4-ecommerce-data-platform` 的标准 Parquet；当前本地联调使用明确标记的 20 行 fixture，正式 Google BigQuery 导出等待云登录，未冒充真实结果。
+3. HMDA 契约：来自 `hmda-credit-analytics-platform` 的 2025 CFPB/FFIEC Delaware Snapshot，**55,183 条真实申请、558 家机构**。
 
-**AI 经营策略报告**（`/report`）
-前端汇总以上分析 → POST `/api/report` → DeepSeek 流式生成结构化的「结论 + 分模块解读 + 可执行动作」，逐字渲染。
+同一 `/api/v1/datasets/{id}/metrics/{metric}` 接口已实际查询三套数据，同一 ECharts 组件按任意白名单维度展示指标。HMDA 返回申请量 55,183、批准量 28,194、发放量 27,033、已决申请拒绝率 22.73%、发放金额 8,050,495,000 美元，与领域项目结果一致。
 
----
+## 指标口径与安全语义层
 
-## 数据可信度设计（本项目的重点）
+数据集 YAML 保存指标中文名、公式/聚合、维度、默认过滤、负责人、版本和单位。查询引擎实际支持：
 
-用固定随机种子生成 6 个月（2026-02-01 ~ 2026-07-31）完整业务数据，全链路可复现（`seed_data.py` 重灌即得同样结果）：
+- count、distinct count、sum、average；
+- ratio 与配置派生指标；
+- 日/周/月时间粒度；
+- 累计值与环比；
+- 白名单维度下钻与参数化过滤。
 
-- **数据量级**：15,000 用户 · 1,077,067 事件 · 66,281 订单 · 16,062 邀请
-- **邀请链路一致**：注册 2850 名邀请渠道用户 == 被接受邀请数 2850 == invitee_id 精确回填，三处口径严格相等
-- **流失标签不泄漏**：churn 特征窗口截止观察期前 30 天，标签按真实沉默定义，AUC 0.819（非作弊也不失真）
-- **渠道因果注入**：spend → 媒体拉动系数 → 订单数，让 MMM 能「拟合」出各渠道贡献
-- **漏斗单调**：邀请漏斗（去重用户）浏览邀请页 16,968 → 分享链接 5,477 → 邀请注册 676 → 首单 492，每步自然衰减
+前端不能提交任意 SQL。数据集和指标必须存在于注册中心，维度必须位于白名单，标识符经过正则校验，过滤值使用参数绑定。详情见 [`docs/METRIC_GOVERNANCE.md`](docs/METRIC_GOVERNANCE.md)。
 
----
+## 数据接入与字段语义映射
+
+统一 Adapter 接口提供连接测试、Schema、字段类型、预览和查询关系：
+
+- CSV、Parquet：DuckDB 直接扫描；
+- SQLite：Python 标准库读取 Schema/预览，并提供 DuckDB 执行关系；
+- PostgreSQL：环境变量连接，读取 `information_schema`，不在配置中保存密码。
+
+映射角色包括 user/event/order/application/institution/time/amount/channel/region/campaign/event_type/status/category。能力判定器根据映射自动启用或停用总览、趋势、漏斗、留存、RFM、渠道、活动、地区、机构和金额指标：HMDA 缺少用户事件时间序列，因此漏斗、留存和 RFM 会显示原因而不是报错。
+
+## 数仓与数据加工
+
+平台展示领域项目 ODS→DWD→DWS→ADS 血缘、节点依赖、指标来源和数据版本，但不重复实现调度器。GA4 与 HMDA 独立完成官方数据下载和领域加工，再通过 ZSTD Parquet 契约接入；三个仓库可独立运行。架构见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，接入契约见 [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md)。
+
+## 数据质量
+
+质量引擎根据每个数据集独立配置执行非空、条件非空、数值范围、枚举值域和唯一性；领域仓库继续负责更深的行数/金额对账、漏斗单调、缺失率、模型样本和新鲜度检查。平台本地联调三数据集各 3 条规则，9/9 通过；HMDA 领域项目另有 17 条真实规则（15 通过、2 警告、0 失败）。
+
+## 产品交付
+
+前端包含数据集切换、数据源管理、Schema/预览、字段映射、指标中心、经营总览、自定义分析、漏斗与留存、数据质量、血缘和平台说明。图表与 KPI 不写死业务数据；HMDA 和电商用同一页面组件。
+
+核心 API：
+
+```text
+GET /api/v1/datasets
+GET /api/v1/datasets/{id}/connection|schema|preview
+GET /api/v1/datasets/{id}/metrics/{metric}?dimension=...&time_grain=...
+GET /api/v1/datasets/{id}/quality|lineage|funnel
+```
 
 ## 本地运行
 
 ```bash
-# 1. 后端
+# 后端
 cd backend
-python3.9 -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # 填入 DEEPSEEK_API_KEY（可留空，报告页降级为本地模板）
-python scripts/seed_data.py   # 生成模拟数据 + 建数仓四层 + 入库（约 1-2 分钟）
+python -m pytest
 uvicorn app.main:app --port 8000
 
-# 2. 前端（另开终端）
+# 前端（另开终端）
 cd frontend
-npm install
-npm run dev                   # http://localhost:5173，/api 自动代理到 8000
+npm ci
+npm run lint
+npm run build
+npm run dev
 ```
 
----
+导入领域契约：
 
-## 生产部署（Neon + Render + Vercel）
-
-### 1. Neon：Postgres 数据库
-1. [neon.tech](https://neon.tech) 注册 → New Project（选离你最近的 region）→ 复制连接串（Pooled 或 Direct 均可）
-2. `DATABASE_URL=postgresql://user:pass@ep-xxx.aws.neon.tech/growth_intel?sslmode=require`
-
-### 2. 灌入种子数据（本地跑，把数据写进 Neon）
 ```bash
-cd backend
-DATABASE_URL="postgresql://user:pass@ep-xxx.../growth_intel?sslmode=require" \
-  .venv/bin/python scripts/seed_data.py
+python backend/scripts/import_contracts.py \
+  --ga4 ../ga4-ecommerce-data-platform/data/platform/ga4_events.parquet \
+  --hmda ../hmda-credit-analytics-platform/data/platform/hmda_applications.parquet
 ```
 
-### 3. Render：后端 API
-- 推代码到 GitHub → Render 面板 **New → Blueprint** → 选仓库（自动读取 `deploy/render.yaml`）
-- 填入 3 个 secret 环境变量：
-  - `DATABASE_URL` = Neon 连接串
-  - `DEEPSEEK_API_KEY` = DeepSeek key
-  - `FRONTEND_ORIGIN` = Vercel 前端地址（如 `https://growth-intel.vercel.app`）
-- 部署后验证：`curl https://<service>.onrender.com/api/health` → `{"status":"ok"}`
+## 实际验收
 
-### 4. Vercel：前端
-- Vercel **Add New → Project** → 导入同一仓库，Root Directory 选 `frontend`
-- 配置环境变量：`VITE_API_BASE = https://<service>.onrender.com`
-- 部署后打开前端，全链路验证：总览 → 三模块 → AI 报告
+- 后端 pytest：**18 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、数据质量、漏斗顺序与能力自动关闭。
+- 前端 lint：0 errors / 0 warnings；生产构建成功，576 modules transformed。
+- 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证数据集切换、真实 HMDA KPI、自动停用漏斗并保存截图。
+- 数据质量：平台契约 9/9 passed；HMDA 领域项目 17 条 0 failed。
+- Docker：保留部署入口，但本机未安装 Docker，因此没有伪称容器实跑通过。
 
-> 免费层冷启动约 30s ~ 1min，首次打开略慢属正常。
+## 项目限制
 
----
+- GA4 正式 BigQuery 导出需要 Google Cloud 登录，当前平台中的 GA4 联调契约是明确标记的 fixture。
+- PostgreSQL 需要调用者提供环境变量；未在公开仓库附带外部数据库凭据。
+- 平台不是企业调度器，血缘是配置驱动的基础血缘；生产可对接 Airflow/dbt 元数据。
+- 旧 MMM/LTV/流失/AI 报告代码保留作特定模板，但默认不挂载，也不声称通用于 HMDA。
+- 当前前端产物的 ECharts chunk 较大，Vite 给出体积警告；后续可按页面动态 import。
 
-## 目录结构
+## 面试与简历材料
 
-```
-growth-intel-platform/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI 入口 + CORS
-│   │   ├── config.py            # 环境变量
-│   │   ├── db.py                # SQLAlchemy（SQLite/Postgres 自动切换）
-│   │   ├── models.py            # ORM 四层表定义
-│   │   ├── routers/             # overview / users / mmm / growth / report
-│   │   └── services/
-│   │       ├── data_gen.py      # 模拟数据生成器（固定种子，全可复现）
-│   │       ├── warehouse.py     # ODS→DWD→DWS→ADS 数仓构建
-│   │       ├── rfm.py / ltv.py / churn.py / mmm.py / growth_attribution.py
-│   │       └── report_gen.py    # DeepSeek 报告（prompt + SSE 流式，无 key 降级模板）
-│   ├── scripts/seed_data.py     # 灌数入口
-│   └── requirements.txt
-├── frontend/                    # React 19 + Vite + ECharts
-│   └── src/
-│       ├── api/client.ts        # 统一 API（VITE_API_BASE 可切换后端）
-│       └── pages/               # Overview / Users / Mmm / Growth / Report
-└── deploy/                      # render.yaml / vercel.json
-```
-
-## 简历一句话
-
-> 全栈构建跨境电商「增长智能分析平台」：自研模拟数仓（ODS→DWD→DWS→ADS，15k 用户 / 107 万事件，固定种子全可复现），实现 RFM 分层、BG-NBD 生命周期预测、GBM 流失预警（AUC 0.82）、adstock+Hill 饱和 MMM 预算分配、邀请裂变 K 因子归因，并接入 DeepSeek 流式生成经营策略报告；后端 FastAPI + 前端 React + LLM，Neon/Render/Vercel 全线上部署。
+- [`docs/AUDIT.md`](docs/AUDIT.md)：旧仓库审计与重构决策
+- [`docs/INTERVIEW_GUIDE.md`](docs/INTERVIEW_GUIDE.md)：架构、安全 SQL、指标治理与业务边界追问
+- [`docs/RESUME_BULLETS.md`](docs/RESUME_BULLETS.md)：数据分析/BI、数据开发/数仓、央国企数字化三版
