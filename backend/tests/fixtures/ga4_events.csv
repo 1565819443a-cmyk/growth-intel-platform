@@ -1,0 +1,7 @@
+event_date,event_timestamp,event_name,user_pseudo_id,session_id,source,medium,campaign,transaction_id,purchase_revenue,device_category,country
+2020-11-01,2020-11-01 09:00:00,page_view,u1,u1-1,google,organic,(not set),,0,desktop,US
+2020-11-01,2020-11-01 09:01:00,view_item,u1,u1-1,google,organic,(not set),,0,desktop,US
+2020-11-01,2020-11-01 09:02:00,add_to_cart,u1,u1-1,google,organic,(not set),,0,desktop,US
+2020-11-01,2020-11-01 09:03:00,begin_checkout,u1,u1-1,google,organic,(not set),,0,desktop,US
+2020-11-01,2020-11-01 09:04:00,purchase,u1,u1-1,google,organic,(not set),t1,99.5,desktop,US
+

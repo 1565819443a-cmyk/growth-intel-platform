@@ -7,6 +7,10 @@ backend/.env
 # 数据库（本地开发库不入库；生产数据在 Neon，由 seed 脚本重建）
 backend/growth.db
 backend/growth.db-journal
+backend/data/imports/*
+!backend/data/imports/.gitkeep
+backend/platform_registry.db
+.pytest_cache/
 
 # Node
 frontend/node_modules/

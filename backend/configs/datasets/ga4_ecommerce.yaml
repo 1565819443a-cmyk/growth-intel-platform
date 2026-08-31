@@ -1,0 +1,33 @@
+id: ga4_ecommerce
+name: GA4 官方电商样例
+description: Google 官方 BigQuery 样例加工契约；当前本地导入可标记 fixture/official
+version: 1.0.0
+status: active
+source:
+  type: parquet
+  path: data/imports/ga4_events.parquet
+mappings:
+  user_id: user_pseudo_id
+  event_id: [event_timestamp, event_name, user_pseudo_id]
+  order_id: transaction_id
+  time: event_timestamp
+  amount: purchase_revenue
+  channel: source
+  campaign: campaign
+  event_type: event_name
+  category: device_category
+dimensions: [source, medium, campaign, device_category, country, event_name]
+metrics:
+  users: {name: 用户数, aggregation: distinct_count, field: user_pseudo_id, owner: 电商分析, version: 1.0.0}
+  sessions: {name: 会话数, aggregation: distinct_count, field: session_id, owner: 电商分析, version: 1.0.0}
+  orders: {name: 订单数, aggregation: distinct_count, field: transaction_id, filter: "event_name = 'purchase'", owner: 电商分析, version: 1.0.0}
+  revenue: {name: 收入, aggregation: sum, field: purchase_revenue, filter: "event_name = 'purchase'", owner: 电商分析, version: 1.0.0}
+  conversion_rate: {name: 购买转化率, aggregation: ratio, numerator: "count(distinct session_id) filter (where event_name='purchase')", denominator: "count(distinct session_id)", unit: percent, owner: 增长分析, version: 1.0.0}
+quality_rules:
+  - {id: user_not_null, type: non_null, field: user_pseudo_id, severity: error}
+  - {id: revenue_non_negative, type: range, field: purchase_revenue, min: 0, severity: error}
+  - {id: order_not_null, type: conditional_non_null, field: transaction_id, when: "event_name='purchase'", severity: error}
+lineage:
+  nodes: [bigquery.events_*, ods.events, dwd.events, dws.session_summary, ads.daily_kpi]
+  edges: [[bigquery.events_*, ods.events], [ods.events, dwd.events], [dwd.events, dws.session_summary], [dws.session_summary, ads.daily_kpi]]
+funnel_steps: [page_view, view_item, add_to_cart, begin_checkout, purchase]

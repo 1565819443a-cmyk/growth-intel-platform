@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import growth, mmm, overview, report, users
+from .routers import platform
 
 app = FastAPI(title="Growth Intelligence Platform", version="0.1.0")
 
@@ -26,11 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(overview.router)
-app.include_router(users.router)
-app.include_router(mmm.router)
-app.include_router(growth.router)
-app.include_router(report.router)
+app.include_router(platform.router)
 
 
 @app.get("/api/health")
