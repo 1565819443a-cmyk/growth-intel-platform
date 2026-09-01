@@ -1,5 +1,7 @@
 # 多数据源经营分析与指标治理平台
 
+[![CI](https://github.com/1565819443a-cmyk/growth-intel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/1565819443a-cmyk/growth-intel-platform/actions/workflows/ci.yml)
+
 > Universal Business Analytics & Metric Governance Platform — 多数据源接入、字段语义映射、统一指标中心、安全动态查询、数据质量、血缘与经营看板。
 
 ![平台经营总览](docs/screenshots/platform-overview.png)
@@ -101,6 +103,7 @@ python backend/scripts/import_contracts.py \
 
 - 后端 pytest：**18 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、数据质量、漏斗顺序与能力自动关闭。
 - 前端 lint：0 errors / 0 warnings；生产构建成功；轻量可访问图表无大体积依赖或 chunk 警告。
+- GitHub Actions：[CI run 33464768276](https://github.com/1565819443a-cmyk/growth-intel-platform/actions/runs/33464768276) 后端和前端两个 job 实际通过。
 - 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证数据集切换、真实 HMDA KPI、自动停用漏斗并保存截图。
 - 数据质量：平台契约 9/9 passed；HMDA 领域项目 17 条 0 failed。
 - Docker：保留部署入口，但本机未安装 Docker，因此没有伪称容器实跑通过。
