@@ -8,6 +8,10 @@
 |---|---|
 | ![HMDA workspace](docs/screenshots/hmda-workspace.png) | ![Capability guard](docs/screenshots/hmda-capability-guard.png) |
 
+线上评审入口：<https://growth-intel-platform.vercel.app>。如果免费 Render 后端休眠或不可达，前端会自动切换到明确标注的 20 条浏览器内置演示快照，KPI、Schema、字段映射、自定义分析、漏斗、质量和血缘页面仍可完整评审；真实 HMDA 与 GA4 契约不会被演示值冒充。
+
+![线上后端不可达时的透明降级](docs/screenshots/online-fallback.png)
+
 ## 业务问题
 
 分析团队经常为每个数据源重新写连接、字段解释、指标 SQL 和看板，造成同名指标口径不一致、一次性分析难以复用、缺字段时页面报错。平台把流程沉淀为：注册数据源 → 读取 Schema → 映射业务角色 → 配置指标/维度/质量规则 → 后端安全生成查询 → 前端按能力动态展示。
@@ -20,7 +24,7 @@
 2. GA4 契约：来自 `ga4-ecommerce-data-platform` 的标准 Parquet；当前本地联调使用明确标记的 20 行 fixture，正式 Google BigQuery 导出等待云登录，未冒充真实结果。
 3. HMDA 契约：来自 `hmda-credit-analytics-platform` 的 2025 CFPB/FFIEC Delaware Snapshot，**55,183 条真实申请、558 家机构**。
 
-同一 `/api/v1/datasets/{id}/metrics/{metric}` 接口已实际查询三套数据，同一 ECharts 组件按任意白名单维度展示指标。HMDA 返回申请量 55,183、批准量 28,194、发放量 27,033、已决申请拒绝率 22.73%、发放金额 8,050,495,000 美元，与领域项目结果一致。
+同一 `/api/v1/datasets/{id}/metrics/{metric}` 接口已实际查询三套数据，同一轻量图表组件按任意白名单维度展示指标。HMDA 返回申请量 55,183、批准量 28,194、发放量 27,033、已决申请拒绝率 22.73%、发放金额 8,050,495,000 美元，与领域项目结果一致。
 
 ## 指标口径与安全语义层
 
@@ -96,7 +100,7 @@ python backend/scripts/import_contracts.py \
 ## 实际验收
 
 - 后端 pytest：**18 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、数据质量、漏斗顺序与能力自动关闭。
-- 前端 lint：0 errors / 0 warnings；生产构建成功，576 modules transformed。
+- 前端 lint：0 errors / 0 warnings；生产构建成功；轻量可访问图表无大体积依赖或 chunk 警告。
 - 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证数据集切换、真实 HMDA KPI、自动停用漏斗并保存截图。
 - 数据质量：平台契约 9/9 passed；HMDA 领域项目 17 条 0 failed。
 - Docker：保留部署入口，但本机未安装 Docker，因此没有伪称容器实跑通过。
@@ -107,7 +111,7 @@ python backend/scripts/import_contracts.py \
 - PostgreSQL 需要调用者提供环境变量；未在公开仓库附带外部数据库凭据。
 - 平台不是企业调度器，血缘是配置驱动的基础血缘；生产可对接 Airflow/dbt 元数据。
 - 旧 MMM/LTV/流失/AI 报告代码保留作特定模板，但默认不挂载，也不声称通用于 HMDA。
-- 当前前端产物的 ECharts chunk 较大，Vite 给出体积警告；后续可按页面动态 import。
+- Render 免费后端目前返回 `hibernate-wake-error`；线上前端已提供透明且明确标注的数据快照降级。恢复后端后会自动优先使用 API，无需重新构建前端。
 
 ## 面试与简历材料
 
