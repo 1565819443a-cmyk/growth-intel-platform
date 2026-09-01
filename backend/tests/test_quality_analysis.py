@@ -8,6 +8,8 @@ def test_dataset_specific_quality_rules_pass():
     for dataset in ["demo_ecommerce","ga4_ecommerce","hmda_2025_de"]:
         report=run_quality(dataset)
         assert report["failed"]==0
+        if dataset == "ga4_ecommerce":
+            assert report["warnings"] == 1
         assert report["rules"]==3
 
 

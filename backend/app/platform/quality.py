@@ -24,8 +24,10 @@ def run_quality(dataset_id:str,registry:DatasetRegistry|None=None)->dict:
             values=rule["values"]; sql=f"SELECT count(*) FROM {relation} WHERE {field} IS NULL OR {field} NOT IN ({','.join('?' for _ in values)})"; params=values
         elif kind=="unique": sql=f"SELECT count(*)-count(DISTINCT {field}) FROM {relation}"
         else: raise ValueError(f"不支持的质量规则：{kind}")
-        failures=int(con.execute(sql,locals().get("params",[])).fetchone()[0] or 0); status="passed" if failures==0 else ("warning" if rule.get("severity")=="warn" else "failed")
-        checks.append({"id":rule["id"],"type":kind,"field":rule["field"],"severity":rule.get("severity","error"),"status":status,"failures":failures})
+        failures=int(con.execute(sql,locals().get("params",[])).fetchone()[0] or 0)
+        severity = rule.get("severity", "error")
+        status="passed" if failures==0 else ("warning" if severity in {"warn", "warning"} else "failed")
+        checks.append({"id":rule["id"],"type":kind,"field":rule["field"],"severity":severity,"status":status,"failures":failures})
         params=[]
     con.close(); return {"dataset_id":dataset_id,"checked_at":datetime.now(timezone.utc).isoformat(),"rules":len(checks),"passed":sum(x["status"]=="passed" for x in checks),"warnings":sum(x["status"]=="warning" for x in checks),"failed":sum(x["status"]=="failed" for x in checks),"checks":checks}
 

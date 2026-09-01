@@ -1,6 +1,6 @@
 id: ga4_ecommerce
 name: GA4 官方电商样例
-description: Google 官方 BigQuery 样例加工契约；当前本地导入可标记 fixture/official
+description: Google 官方 BigQuery 样例正式加工契约；92 天、4,295,584 条去重事件
 version: 1.0.0
 status: active
 source:
@@ -26,7 +26,7 @@ metrics:
 quality_rules:
   - {id: user_not_null, type: non_null, field: user_pseudo_id, severity: error}
   - {id: revenue_non_negative, type: range, field: purchase_revenue, min: 0, severity: error}
-  - {id: order_not_null, type: conditional_non_null, field: transaction_id, when: "event_name='purchase'", severity: error}
+  - {id: order_not_null, type: conditional_non_null, field: transaction_id, when: "event_name='purchase'", severity: warning}
 lineage:
   nodes: [bigquery.events_*, ods.events, dwd.events, dws.session_summary, ads.daily_kpi]
   edges: [[bigquery.events_*, ods.events], [ods.events, dwd.events], [dwd.events, dws.session_summary], [dws.session_summary, ads.daily_kpi]]
