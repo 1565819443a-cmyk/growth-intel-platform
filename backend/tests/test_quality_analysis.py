@@ -2,6 +2,7 @@ import pytest
 
 from app.platform.analysis import funnel
 from app.platform.quality import run_quality
+from app.platform.registry import DatasetRegistry
 
 
 def test_dataset_specific_quality_rules_pass():
@@ -9,6 +10,28 @@ def test_dataset_specific_quality_rules_pass():
         report=run_quality(dataset)
         assert report["failed"]==0
         assert report["rules"]==3
+
+
+def test_warning_severity_is_not_counted_as_failure(tmp_path):
+    config_dir = tmp_path / "configs/datasets"
+    config_dir.mkdir(parents=True)
+    (tmp_path / "events.csv").write_text(
+        "event_name,transaction_id\npurchase,\n", encoding="utf-8"
+    )
+    (config_dir / "warning_case.yaml").write_text(
+        """id: warning_case
+name: Warning case
+source: {type: csv, path: events.csv}
+mappings: {event_type: event_name, order_id: transaction_id}
+metrics: {events: {name: Events, aggregation: count, owner: test, version: 1.0.0}}
+quality_rules:
+  - {id: order_not_null, type: conditional_non_null, field: transaction_id, when: "event_name='purchase'", severity: warning}
+""",
+        encoding="utf-8",
+    )
+    report = run_quality("warning_case", DatasetRegistry(tmp_path))
+    assert report["warnings"] == 1
+    assert report["failed"] == 0
 
 
 def test_funnel_is_order_aware():

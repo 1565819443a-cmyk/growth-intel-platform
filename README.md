@@ -10,6 +10,10 @@
 |---|---|
 | ![HMDA workspace](docs/screenshots/hmda-workspace.png) | ![Capability guard](docs/screenshots/hmda-capability-guard.png) |
 
+| GA4 官方 4.3M 事件经营工作区 | GA4 源数据警告透明展示 |
+|---|---|
+| ![GA4 official workspace](docs/screenshots/ga4-official-workspace.png) | ![GA4 quality workspace](docs/screenshots/ga4-quality-workspace.png) |
+
 线上评审入口：<https://growth-intel-platform.vercel.app>。如果免费 Render 后端休眠或不可达，前端会自动切换到明确标注的 20 条浏览器内置演示快照，KPI、Schema、字段映射、自定义分析、漏斗、质量和血缘页面仍可完整评审；真实 HMDA 与 GA4 契约不会被演示值冒充。
 
 ![线上后端不可达时的透明降级](docs/screenshots/online-fallback.png)
@@ -23,10 +27,10 @@
 本地实际注册三套结构不同的数据：
 
 1. 模拟电商事件：仓库内 20 行确定性演示数据，可独立运行。
-2. GA4 契约：来自 `ga4-ecommerce-data-platform` 的标准 Parquet；当前本地联调使用明确标记的 20 行 fixture，正式 Google BigQuery 导出等待云登录，未冒充真实结果。
+2. GA4 契约：来自 `ga4-ecommerce-data-platform` 的正式标准 Parquet，**4,295,584 条官方样例事件、270,154 位用户、360,129 个会话**。
 3. HMDA 契约：来自 `hmda-credit-analytics-platform` 的 2025 CFPB/FFIEC Delaware Snapshot，**55,183 条真实申请、558 家机构**。
 
-同一 `/api/v1/datasets/{id}/metrics/{metric}` 接口已实际查询三套数据，同一轻量图表组件按任意白名单维度展示指标。HMDA 返回申请量 55,183、批准量 28,194、发放量 27,033、已决申请拒绝率 22.73%、发放金额 8,050,495,000 美元，与领域项目结果一致。
+同一 `/api/v1/datasets/{id}/metrics/{metric}` 接口已实际查询三套数据，同一轻量图表组件按任意白名单维度展示指标。GA4 返回用户 270,154、会话 360,129、订单 4,452、收入 362,165 美元、会话转化率 1.35%；HMDA 返回申请量 55,183、批准量 28,194、发放量 27,033、已决申请拒绝率 22.73%、发放金额 8,050,495,000 美元，均与领域项目结果一致。
 
 ## 指标口径与安全语义层
 
@@ -56,7 +60,7 @@
 
 ## 数据质量
 
-质量引擎根据每个数据集独立配置执行非空、条件非空、数值范围、枚举值域和唯一性；领域仓库继续负责更深的行数/金额对账、漏斗单调、缺失率、模型样本和新鲜度检查。平台本地联调三数据集各 3 条规则，9/9 通过；HMDA 领域项目另有 17 条真实规则（15 通过、2 警告、0 失败）。
+质量引擎根据每个数据集独立配置执行非空、条件非空、数值范围、枚举值域和唯一性；领域仓库继续负责更深的行数/金额对账、漏斗单调、缺失率、模型样本和新鲜度检查。平台本地联调三数据集共 9 条规则：8 通过、1 警告、0 失败；GA4 的 23 条缺失 transaction_id 被正确标为源数据警告。GA4 领域项目另有 19 条规则（17 通过、2 警告、0 失败），HMDA 领域项目有 17 条规则（15 通过、2 警告、0 失败）。
 
 ## 产品交付
 
@@ -101,16 +105,16 @@ python backend/scripts/import_contracts.py \
 
 ## 实际验收
 
-- 后端 pytest：**18 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、数据质量、漏斗顺序与能力自动关闭。
+- 后端 pytest：**19 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、warning 语义、漏斗顺序与能力自动关闭。
 - 前端 lint：0 errors / 0 warnings；生产构建成功；轻量可访问图表无大体积依赖或 chunk 警告。
 - GitHub Actions：[CI run 33464768276](https://github.com/1565819443a-cmyk/growth-intel-platform/actions/runs/33464768276) 后端和前端两个 job 实际通过。
-- 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证数据集切换、真实 HMDA KPI、自动停用漏斗并保存截图。
-- 数据质量：平台契约 9/9 passed；HMDA 领域项目 17 条 0 failed。
+- 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证三数据集切换、正式 GA4 KPI、真实 HMDA KPI、质量警告和能力自动停用并保存截图。
+- 数据质量：平台契约 9 条中 8 passed / 1 warning / 0 failed；GA4 领域 19 条 0 failed；HMDA 领域 17 条 0 failed。
 - Docker：保留部署入口，但本机未安装 Docker，因此没有伪称容器实跑通过。
 
 ## 项目限制
 
-- GA4 正式 BigQuery 导出需要 Google Cloud 登录，当前平台中的 GA4 联调契约是明确标记的 fixture。
+- GA4/HMDA 大型正式契约不提交本仓库，需要按上方命令从两个领域仓库本地导入；缺失时平台会明确显示不可用，不回退成伪造的真实数据。
 - PostgreSQL 需要调用者提供环境变量；未在公开仓库附带外部数据库凭据。
 - 平台不是企业调度器，血缘是配置驱动的基础血缘；生产可对接 Airflow/dbt 元数据。
 - 旧 MMM/LTV/流失/AI 报告代码保留作特定模板，但默认不挂载，也不声称通用于 HMDA。
