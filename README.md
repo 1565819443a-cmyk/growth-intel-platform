@@ -105,7 +105,7 @@ python backend/scripts/import_contracts.py \
 
 ## 实际验收
 
-- 后端 pytest：**18 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、数据质量、漏斗顺序与能力自动关闭。
+- 后端 pytest：**19 passed / 0 failed**；包含三数据集注册、同一指标 API、安全维度、累计/环比、warning 语义、漏斗顺序与能力自动关闭。
 - 前端 lint：0 errors / 0 warnings；生产构建成功；轻量可访问图表无大体积依赖或 chunk 警告。
 - GitHub Actions：[CI run 33464768276](https://github.com/1565819443a-cmyk/growth-intel-platform/actions/runs/33464768276) 后端和前端两个 job 实际通过。
 - 本地启动：FastAPI 8000 + Vite 5173 实际启动；浏览器验证三数据集切换、正式 GA4 KPI、真实 HMDA KPI、质量警告和能力自动停用并保存截图。

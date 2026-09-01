@@ -6,7 +6,7 @@
 
 ## 数据开发 / 数仓
 
-- 抽象 CSV/Parquet/SQLite/PostgreSQL 统一适配器，构建配置驱动语义层与安全 SQL 生成器，支持 count/distinct/sum/average/ratio/派生、累计及环比；用 18 个后端测试验证多数据集指标、数据质量、契约导入和能力判定。
+- 抽象 CSV/Parquet/SQLite/PostgreSQL 统一适配器，构建配置驱动语义层与安全 SQL 生成器，支持 count/distinct/sum/average/ratio/派生、累计及环比；用 19 个后端测试验证多数据集指标、数据质量、契约导入和能力判定。
 
 ## 央国企数据与数字化
 
